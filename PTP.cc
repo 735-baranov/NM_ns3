@@ -47,7 +47,7 @@ int main (int argc, char *argv[])
     serverApps.Start (Seconds (1.0));
     serverApps.Stop (Seconds (10.0));
 
-    /* Опять же, мы передаем необходимые атрибуты в конструктор UdpEchoClientHelper. 
+    /* Мы передаем необходимые атрибуты в конструктор UdpEchoClientHelper. 
     Мы говорим клиенту отправлять пакеты на сервер.
     Мы устанавливаем клиент на первой точке (nodes 0). */
     UdpEchoClientHelper echoClient(interfaces.GetAddress(1), 4445);
