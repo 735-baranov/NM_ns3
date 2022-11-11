@@ -1,9 +1,11 @@
-# For projects that use the Waf build system: https://waf.io/
-# Dot-hidden on Unix-like systems
-.waf-*-*/
-.waf3-*-*/
-# Hidden directory on Windows (no dot)
-waf-*-*/
-waf3-*-*/
-# Lockfile
-.lock-waf_*_build
+ns-3.30.1/build/
+ns-3.30.1/testpy-output/
+ns-3.30.1/.vscode/
+ns-3.30.1/__pycache__/
+ns-3.30.1/.waf3-2.0.18-ff4ae9f5cc05353d3dc3aeff8854ae69/
+ns-3.30.1/waf-tools/
+ns-3.30.1/utils/
+ns-3.30.1/doc/
+ns-3.30.1/contrib/
+ns-3.30.1/bindings/
+ns-3.30.1/examples/
