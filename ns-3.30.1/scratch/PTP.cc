@@ -1,3 +1,4 @@
+#include <fstream>
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
@@ -14,6 +15,7 @@ int main (int argc, char *argv[])
     cmd.Parse (argc, argv);
 
     Time::SetResolution (Time::NS);
+    LogComponentEnable("PTP", LOG_LEVEL_INFO);
     LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
     LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);
     
@@ -39,7 +41,6 @@ int main (int argc, char *argv[])
     Ipv4AddressHelper address;
     address.SetBase ("192.168.0.0", "255.255.255.0");
     Ipv4InterfaceContainer interfaces = address.Assign (devices);
-    
     /* Создаем экземпляр сервера на одном из узлов с устройством
     и клиенте на узле, имеющем только двухточечное устройство */
     UdpEchoServerHelper echoServer (4445); //Настройка эха сервера
@@ -47,7 +48,7 @@ int main (int argc, char *argv[])
     serverApps.Start (Seconds (1.0));
     serverApps.Stop (Seconds (10.0));
 
-    /* Опять же, мы передаем необходимые атрибуты в конструктор UdpEchoClientHelper. 
+    /* Мы передаем необходимые атрибуты в конструктор UdpEchoClientHelper. 
     Мы говорим клиенту отправлять пакеты на сервер.
     Мы устанавливаем клиент на первой точке (nodes 0). */
     UdpEchoClientHelper echoClient(interfaces.GetAddress(1), 4445);
@@ -57,7 +58,15 @@ int main (int argc, char *argv[])
     ApplicationContainer clientApps = echoClient.Install (nodes.Get (0));
     clientApps.Start (Seconds (2.0));
     clientApps.Stop (Seconds (10.0));
+    
+    echoClient.SetFill (clientApps.Get (0), "Hello World");
+    echoClient.SetFill (clientApps.Get (0), 0xa5, 1024);
+    uint8_t fill[] = { 0, 1, 2, 3, 4, 5, 6, 7};
+    echoClient.SetFill (clientApps.Get (0), fill, sizeof(fill), 1024);
 
+    AsciiTraceHelper ascii;
+    pointToPoint.EnableAsciiAll (ascii.CreateFileStream ("PTP.txt"));
+    pointToPoint.EnablePcapAll ("PTP-PTP", true);
     Simulator::Run ();
     Simulator::Stop ();
 }
