@@ -36,7 +36,6 @@ int main (int argc, char *argv[])
     // Создаем стек протокол
     InternetStackHelper stack;
     stack.Install (nodes);
-    
     // Далее нужно назначить IP-адресс
     Ipv4AddressHelper address;
     address.SetBase ("192.168.0.0", "255.255.255.0");
@@ -47,7 +46,6 @@ int main (int argc, char *argv[])
     ApplicationContainer serverApps = echoServer.Install (nodes.Get (1));
     serverApps.Start (Seconds (1.0));
     serverApps.Stop (Seconds (10.0));
-
     /* Мы передаем необходимые атрибуты в конструктор UdpEchoClientHelper. 
     Мы говорим клиенту отправлять пакеты на сервер.
     Мы устанавливаем клиент на первой точке (nodes 0). */
@@ -56,17 +54,30 @@ int main (int argc, char *argv[])
     echoClient.SetAttribute("Interval", TimeValue(Seconds(1.0)));
     echoClient.SetAttribute("PacketSize", UintegerValue(1024));
     ApplicationContainer clientApps = echoClient.Install (nodes.Get (0));
+    echoClient.SetFill (clientApps.Get (0), "Hello World");
+    echoClient.SetFill (clientApps.Get (0), 0xa5, 1024);
+    uint8_t fill[] = {1, 0, 1, 0, 0, 1, 0, 1};
+    echoClient.SetFill (clientApps.Get (0), fill, sizeof(fill), 1024);
+    uint8_t N = sizeof(fill);
+   
     clientApps.Start (Seconds (2.0));
     clientApps.Stop (Seconds (10.0));
     
-    echoClient.SetFill (clientApps.Get (0), "Hello World");
-    echoClient.SetFill (clientApps.Get (0), 0xa5, 1024);
-    uint8_t fill[] = { 0, 1, 2, 3, 4, 5, 6, 7};
-    echoClient.SetFill (clientApps.Get (0), fill, sizeof(fill), 1024);
-
     AsciiTraceHelper ascii;
     pointToPoint.EnableAsciiAll (ascii.CreateFileStream ("PTP.txt"));
     pointToPoint.EnablePcapAll ("PTP-PTP", true);
+
     Simulator::Run ();
+    for(uint8_t i = 0; i < N; i++) 
+    {
+        if (fill[i] == 1)
+        {
+           std::cout << "Тут у нас = 1"  << "\n";
+        }
+        else if (fill[i] == 0)
+        {
+           std::cout << "Тут у нас = 0"  << "\n";
+        }
+    }
     Simulator::Stop ();
 }
