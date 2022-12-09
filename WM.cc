@@ -2,8 +2,6 @@
 #include "ns3/command-line.h"
 #include "ns3/config-store.h"
 #include "ns3/config.h"
-#include "ns3/boolean.h"
-#include "ns3/uinteger.h"
 #include "ns3/string.h"
 #include "ns3/ssid.h"
 #include "ns3/spectrum-helper.h"
@@ -12,7 +10,7 @@
 #include "ns3/spectrum-channel.h"
 #include "ns3/wifi-helper.h"
 #include "ns3/wifi-net-device.h"
-#include "ns3/inet-socket-address.h"
+#include "ns3/mobility-helper.h"
 
 
 using namespace ns3;
@@ -37,6 +35,9 @@ int main (int argc, char *argv[])
     wifiStaNode.Create (1);   // Create 1 station node objects
     NodeContainer wifiApNode;
     wifiApNode.Create (1);   // Create 1 access point node object
+    NodeContainer allNodes;
+    allNodes.Add(wifiApNode.Get(0));
+    allNodes.Add(wifiStaNode.Get(1));
 
     // Create a channel helper and phy helper, and then create the channel
     SpectrumChannelHelper channelHepler = SpectrumChannelHelper::Default();
@@ -61,6 +62,14 @@ int main (int argc, char *argv[])
                "Ssid", SsidValue (ssid),
                "EnableBeaconJitter", BooleanValue (false)); // so as to be sure that first beacon arrives quickly
     NetDeviceContainer wifiApDevice = wifi.Install (spectrumPhy, mac, wifiApNode);
+
+    MobilityHelper mobility;
+    Ptr<ListPositionAllocator> nodePositionList = CreateObject<ListPositionAllocator> ();
+    nodePositionList->Add (Vector (0.0, 1.0, 0.0)); // AP
+    nodePositionList->Add (Vector (1.0, 0.0, 0.0)); // STA
+    mobility.SetPositionAllocator (nodePositionList);
+    mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+    mobility.Install (allNodes);
 
     Simulator::Schedule (dataStartTime, &SendPacket, wifiApDevice.Get (0), wifiStaDevices.Get (0)->GetAddress ());
     Simulator::Schedule (dataStartTime, &SendPacket, wifiStaDevices.Get (0), wifiApDevice.Get (0)->GetAddress ());    
